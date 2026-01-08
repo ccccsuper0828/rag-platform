@@ -2,6 +2,8 @@ fastapi
 uvicorn[standard]
 httpx
 pymysql
+web3
+eth-account
 llama-index-core
 pymupdf
 python-pptx
