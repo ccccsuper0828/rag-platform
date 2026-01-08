@@ -1,4 +1,5 @@
-fastapi[uvicorn]
+fastapi
+uvicorn[standard]
 httpx
 llama-index-core
 pymupdf
