@@ -251,7 +251,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 
-const API_BASE = 'http://localhost:8000'
+const API_BASE = ''
 
 // State
 const activeTab = ref('my')

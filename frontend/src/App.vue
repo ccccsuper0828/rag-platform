@@ -1222,7 +1222,7 @@ import Web3Hub from './components/Web3Hub.vue'
 import MintNFTModal from './components/MintNFTModal.vue'
 
 // API
-const API_BASE = 'http://localhost:8000'
+const API_BASE = ''
 
 // State
 const isDarkMode = ref(false)
@@ -2745,7 +2745,7 @@ const connectToDiscussion = async (roomId, ragId) => {
   const storedUser = localStorage.getItem('username') || currentUser.value
   
   // 建立 WebSocket 连接
-  const wsUrl = `ws://localhost:8000/ws/discussion/${roomId}`
+  const wsUrl = `ws://${window.location.host}/ws/discussion/${roomId}`
   const ws = new WebSocket(wsUrl)
   
   ws.onopen = () => {

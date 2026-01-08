@@ -432,7 +432,7 @@ const splitPosition = ref(55)
 const isResizing = ref(false)
 
 // API Base
-const API_BASE = 'http://localhost:8000'
+const API_BASE = ''
 
 // Initialize based on document type
 onMounted(async () => {

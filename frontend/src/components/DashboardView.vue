@@ -246,7 +246,7 @@ const props = defineProps({
   },
   apiBase: {
     type: String,
-    default: 'http://localhost:8000'
+    default: ''
   }
 })
 
