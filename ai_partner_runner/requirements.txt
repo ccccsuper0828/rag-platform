@@ -1,0 +1,15 @@
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+python-multipart==0.0.20
+pydantic==2.10.4
+python-dotenv==1.0.1
+ripgrepy>=2.2.0
+dataclasses-json>=0.6.0
+
+# LEANN - Semantic search with 97% storage savings
+# These packages enable hybrid semantic+keyword search
+leann-core>=0.3.0
+leann-backend-hnsw>=0.3.0
+sentence-transformers>=3.0.0
+numpy>=1.26.0
+torch>=2.0.0

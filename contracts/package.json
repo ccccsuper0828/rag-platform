@@ -1,0 +1,26 @@
+{
+  "name": "rag-platform-contracts",
+  "version": "1.0.0",
+  "description": "RAG Platform Smart Contracts",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "deploy:local": "hardhat run scripts/deploy.js --network localhost",
+    "deploy:sepolia": "hardhat run scripts/deploy.js --network sepolia",
+    "deploy:polygon": "hardhat run scripts/deploy.js --network polygon_amoy",
+    "deploy:base": "hardhat run scripts/deploy.js --network base_sepolia",
+    "verify": "hardhat verify --network sepolia",
+    "node": "hardhat node",
+    "clean": "hardhat clean"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "@openzeppelin/contracts": "^5.0.0",
+    "dotenv": "^16.3.1",
+    "hardhat": "^2.19.0"
+  },
+  "keywords": ["ethereum", "nft", "rag", "smart-contracts"],
+  "author": "",
+  "license": "MIT"
+}
+

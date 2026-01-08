@@ -1,0 +1,109 @@
+version: '3.8'
+
+services:
+  # ========== MySQL 数据库 ==========
+  mysql:
+    image: mysql:8.0
+    container_name: rag-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-ragplatform123}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-rag_platform}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - rag-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-ragplatform123}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ========== AI Partner Runner (Claude Skills) ==========
+  runner:
+    build:
+      context: ./ai_partner_runner
+      dockerfile: Dockerfile.prod
+    container_name: rag-runner
+    restart: always
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - CLAUDE_BIN=/usr/local/bin/claude
+      - AI_PARTNER_WORKSPACES_DIR=/app/workspaces
+      - AI_PARTNER_SKILL_SRC=/app/skill
+    volumes:
+      - workspaces_data:/app/workspaces
+      - ../ai-partner-chat:/app/skill:ro
+    networks:
+      - rag-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # ========== 后端 API ==========
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
+    container_name: rag-backend
+    restart: always
+    environment:
+      - MYSQL_HOST=mysql
+      - MYSQL_PORT=3306
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=${MYSQL_ROOT_PASSWORD:-ragplatform123}
+      - MYSQL_DB=${MYSQL_DATABASE:-rag_platform}
+      - AI_PARTNER_RUNNER_URL=http://runner:9001
+      - JWT_SECRET=${JWT_SECRET:-your-secure-jwt-secret}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - OLLAMA_URL=http://ollama:11434
+    volumes:
+      - workspaces_data:/app/ai_partner_workspaces
+    depends_on:
+      mysql:
+        condition: service_healthy
+      runner:
+        condition: service_healthy
+    networks:
+      - rag-network
+
+  # ========== 前端 ==========
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+      args:
+        - VITE_API_BASE_URL=${API_URL:-http://localhost:8000}
+    container_name: rag-frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - rag-network
+
+  # ========== Ollama (可选，本地 LLM 备份) ==========
+  ollama:
+    image: ollama/ollama:latest
+    container_name: rag-ollama
+    restart: unless-stopped
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - rag-network
+    profiles:
+      - with-ollama
+
+networks:
+  rag-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+  workspaces_data:
+  ollama_data:

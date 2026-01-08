@@ -1,0 +1,54 @@
+# Render 部署配置
+# https://render.com/docs/blueprint-spec
+
+services:
+  # Backend API
+  - type: web
+    name: rag-platform-api
+    env: python
+    region: oregon
+    plan: starter
+    buildCommand: pip install -r requirements.prod.txt
+    startCommand: gunicorn main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_TYPE
+        value: mysql
+      - key: MYSQL_HOST
+        fromDatabase:
+          name: rag-mysql
+          property: host
+      - key: MYSQL_PORT
+        fromDatabase:
+          name: rag-mysql
+          property: port
+      - key: MYSQL_USER
+        fromDatabase:
+          name: rag-mysql
+          property: user
+      - key: MYSQL_PASSWORD
+        fromDatabase:
+          name: rag-mysql
+          property: password
+      - key: MYSQL_DATABASE
+        fromDatabase:
+          name: rag-mysql
+          property: database
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: STORAGE_TYPE
+        value: s3
+      - key: S3_BUCKET
+        sync: false
+      - key: S3_ACCESS_KEY
+        sync: false
+      - key: S3_SECRET_KEY
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+
+databases:
+  - name: rag-mysql
+    databaseName: rag_platform
+    plan: starter
+

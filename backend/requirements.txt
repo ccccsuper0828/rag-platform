@@ -1,0 +1,39 @@
+fastapi[uvicorn]
+httpx
+llama-index-core
+pymupdf
+python-pptx
+Pillow
+python-multipart
+openai-whisper
+ffmpeg-python
+tiktoken
+tqdm
+tenacity
+aiofiles
+aiohttp
+json-repair
+python-jose[cryptography]
+passlib[bcrypt]
+bcrypt==4.0.1
+python-multipart
+email-validator
+
+# LEANN - Low-storage semantic search (97% storage savings)
+# Install with: pip install leann-core leann-backend-hnsw
+# Or install from source: pip install -e ../LEANN/packages/leann-core ../LEANN/packages/leann-backend-hnsw
+leann-core>=0.3.0
+leann-backend-hnsw>=0.3.0
+sentence-transformers>=3.0.0
+
+# Cross-Encoder for reranking (improves search precision by 5-15%)
+# Uses: BAAI/bge-reranker-base by default
+
+# Research Mode dependencies
+asyncio-throttle>=1.0.0
+
+# Memory System
+# SQLite is built-in, no extra deps needed
+
+# MCP Protocol
+# httpx already included above

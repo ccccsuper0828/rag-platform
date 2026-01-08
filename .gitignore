@@ -1,0 +1,106 @@
+# ============================================
+# RAG Platform .gitignore
+# ============================================
+
+# ========== 依赖库 ==========
+node_modules/
+venv/
+.venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ========== 环境变量（敏感信息）==========
+.env
+.env.*
+!.env.example
+!env.example
+!env.production.example
+*.env
+backend/.env
+ai_partner_runner/.env
+contracts/.env
+frontend/.env
+
+# ========== 用户数据（隐私）==========
+ai_partner_workspaces/
+backend/user_data/
+backend/rag_storage/
+rag_storage/
+
+# ========== 数据库 ==========
+*.db
+*.sqlite
+*.sqlite3
+chroma_db/
+backend/chroma_db/
+*.sql.gz
+
+# ========== 日志文件 ==========
+*.log
+logs/
+backend/logs/
+runner.log
+nohup.out
+*.jsonl
+
+# ========== 构建产物 ==========
+dist/
+build/
+*.egg-info/
+.eggs/
+
+# ========== 前端构建 ==========
+frontend/dist/
+frontend-unified/dist/
+
+# ========== 智能合约 ==========
+contracts/node_modules/
+contracts/artifacts/
+contracts/cache/
+contracts/typechain-types/
+
+# ========== IDE 和编辑器 ==========
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ========== 测试和覆盖率 ==========
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+coverage.xml
+*.cover
+
+# ========== 临时文件 ==========
+*.tmp
+*.temp
+*.bak
+.cache/
+tmp/
+temp/
+
+# ========== Claude/AI 相关 ==========
+.claude/
+*.session
+
+# ========== 其他 ==========
+*.pid
+*.seed
+*.pid.lock
+
+# ========== 保留的示例文件 ==========
+!**/example.*
+!**/*.example
+!**/template.*
+
