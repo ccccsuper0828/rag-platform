@@ -204,10 +204,18 @@ class MemoryStore:
             
             row = cursor.fetchone()
         
+        if not row:
+            return {
+                "total_memories": 0,
+                "avg_importance": 0.0,
+                "total_accesses": 0,
+            }
+        
+        # MySQL DictCursor returns dict with column names as keys
         return {
-            "total_memories": row[0] or 0,
-            "avg_importance": round(row[1] or 0, 2),
-            "total_accesses": row[2] or 0,
+            "total_memories": row.get("total_memories") or row.get("COUNT(*)") or 0,
+            "avg_importance": round(row.get("avg_importance") or row.get("AVG(importance)") or 0, 2),
+            "total_accesses": row.get("total_accesses") or row.get("SUM(access_count)") or 0,
         }
     
     def export_all(self) -> List[Dict[str, Any]]:

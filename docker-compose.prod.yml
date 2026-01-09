@@ -35,7 +35,6 @@ services:
       - AI_PARTNER_SKILL_SRC=/app/skill
     volumes:
       - workspaces_data:/app/workspaces
-      - ../ai-partner-chat:/app/skill:ro
     networks:
       - rag-network
     healthcheck:
@@ -52,6 +51,8 @@ services:
       dockerfile: Dockerfile.prod
     container_name: rag-backend
     restart: always
+    env_file:
+      - ./backend/.env
     environment:
       - MYSQL_HOST=mysql
       - MYSQL_PORT=3306
@@ -60,7 +61,6 @@ services:
       - MYSQL_DB=${MYSQL_DATABASE:-rag_platform}
       - AI_PARTNER_RUNNER_URL=http://runner:9001
       - JWT_SECRET=${JWT_SECRET:-your-secure-jwt-secret}
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - OLLAMA_URL=http://ollama:11434
       - KG_ENABLED=true
       - FALKORDB_HOST=falkordb

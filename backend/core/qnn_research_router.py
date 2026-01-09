@@ -54,28 +54,34 @@ class QNNResearchResponse(BaseModel):
 # ============================================
 
 async def create_llm_caller(model_name: str = "qwen3:8b"):
-    """创建 LLM 调用函数 - 优先使用 Claude，回退到 Ollama"""
+    """创建 LLM 调用函数 - 优先使用 Claude/Kimi K2，回退到 Ollama"""
     ollama_url = os.getenv("OLLAMA_URL", "http://localhost:11434")
     anthropic_key = os.getenv("ANTHROPIC_API_KEY", "")
+    anthropic_base_url = os.getenv("ANTHROPIC_BASE_URL", "")
+    anthropic_model = os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-20250514")
     runner_url = os.getenv("AI_PARTNER_RUNNER_URL", "http://localhost:9001")
     
     async def call_llm(prompt: str) -> str:
-        # 优先尝试 Anthropic Claude API
+        # 优先尝试 Anthropic Claude API (或 Kimi K2)
         if anthropic_key:
             try:
                 import anthropic
-                client = anthropic.Anthropic(api_key=anthropic_key)
+                # 支持自定义 base_url (如 Kimi K2)
+                client_kwargs = {"api_key": anthropic_key}
+                if anthropic_base_url:
+                    client_kwargs["base_url"] = anthropic_base_url
+                client = anthropic.Anthropic(**client_kwargs)
                 response = client.messages.create(
-                    model="claude-sonnet-4-20250514",
+                    model=anthropic_model,
                     max_tokens=2048,
                     messages=[{"role": "user", "content": prompt}]
                 )
                 result = response.content[0].text
                 if result:
-                    print(f"[create_llm_caller] Claude API success, len={len(result)}")
+                    print(f"[create_llm_caller] Claude/Kimi API success, len={len(result)}")
                     return result
             except Exception as e:
-                print(f"[create_llm_caller] Claude API error: {e}")
+                print(f"[create_llm_caller] Claude/Kimi API error: {e}")
         
         # 尝试 AI Partner Runner
         if runner_url:

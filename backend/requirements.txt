@@ -45,3 +45,6 @@ anthropic>=0.18.0
 
 # Knowledge Graph (local mode)
 spacy>=3.7.0
+
+# Graphiti Knowledge Graph
+graphiti-core>=0.5.0
