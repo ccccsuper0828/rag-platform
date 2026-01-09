@@ -108,7 +108,7 @@ class UserManager:
         user_data = UserDB.get_by_username(username)
         
         if user_data:
-                if self._verify_password(password, user_data.get("password_hash", "")):
+            if self._verify_password(password, user_data.get("password_hash", "")):
                 return User(
                     id=user_data["id"],
                     username=user_data["username"],
