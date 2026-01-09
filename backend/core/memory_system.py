@@ -120,7 +120,7 @@ class MemoryStore:
         with get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute(
-                "SELECT * FROM memories WHERE id = ? AND user_id = ?", 
+                "SELECT * FROM memories WHERE id = %s AND user_id = %s", 
                 (memory_id, self.user_id)
             )
             row = cursor.fetchone()
@@ -167,7 +167,7 @@ class MemoryStore:
         with get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute(
-                "UPDATE memories SET importance = ? WHERE id = ? AND user_id = ?",
+                "UPDATE memories SET importance = %s WHERE id = %s AND user_id = %s",
                 (min(max(importance, 0.0), 1.0), memory_id, self.user_id)
             )
     
@@ -180,8 +180,8 @@ class MemoryStore:
             cursor.execute("""
                 UPDATE memories 
                 SET importance = importance * 0.9
-                WHERE user_id = ? 
-                  AND last_accessed < ?
+                WHERE user_id = %s 
+                  AND last_accessed < %s
                   AND importance > 0.1
             """, (self.user_id, cutoff_date))
             
@@ -199,7 +199,7 @@ class MemoryStore:
                     COUNT(*) as total,
                     AVG(importance) as avg_importance,
                     SUM(access_count) as total_accesses
-                FROM memories WHERE user_id = ?
+                FROM memories WHERE user_id = %s
             """, (self.user_id,))
             
             row = cursor.fetchone()
@@ -254,28 +254,31 @@ class MemoryStore:
             cursor = conn.cursor()
             cursor.execute("""
                 UPDATE memories 
-                SET last_accessed = ?, access_count = access_count + 1
-                WHERE id = ? AND user_id = ?
+                SET last_accessed = %s, access_count = access_count + 1
+                WHERE id = %s AND user_id = %s
             """, (datetime.now().isoformat(), memory_id, self.user_id))
     
     def _enforce_limit(self):
         """强制执行记忆数量限制"""
         with get_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT COUNT(*) FROM memories WHERE user_id = ?", (self.user_id,))
+            cursor.execute("SELECT COUNT(*) FROM memories WHERE user_id = %s", (self.user_id,))
             count = cursor.fetchone()[0]
             
             if count > MAX_MEMORIES_PER_USER:
-                # 删除最不重要的记忆
+                # 删除最不重要的记忆 (MySQL 兼容写法)
+                to_delete = count - MAX_MEMORIES_PER_USER
                 cursor.execute("""
                     DELETE FROM memories 
-                    WHERE id IN (
-                        SELECT id FROM memories 
-                        WHERE user_id = ?
-                        ORDER BY importance ASC, last_accessed ASC
-                        LIMIT ?
+                    WHERE user_id = %s AND id IN (
+                        SELECT id FROM (
+                            SELECT id FROM memories 
+                            WHERE user_id = %s
+                            ORDER BY importance ASC, last_accessed ASC
+                            LIMIT %s
+                        ) AS tmp
                     )
-                """, (self.user_id, count - MAX_MEMORIES_PER_USER))
+                """, (self.user_id, self.user_id, to_delete))
                 
                 deleted = cursor.rowcount
                 print(f"🧹 Cleaned {deleted} old memories to enforce limit")

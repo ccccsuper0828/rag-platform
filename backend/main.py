@@ -609,15 +609,15 @@ async def list_rags(current_user: dict = Depends(get_current_user)):
     
     # 再添加只在内存中的 RAG（新创建但未持久化的）
     if user_id in rag_engine_cache:
-        for rag_id, session_data in rag_engine_cache[user_id].items():
+    for rag_id, session_data in rag_engine_cache[user_id].items():
             if rag_id not in seen_rag_ids:
-                rags.append({
-                    "rag_id": rag_id,
-                    "arch": session_data.get("arch", "aipartner"),
-                    "file_path": session_data.get("file_path", ""),
+        rags.append({
+            "rag_id": rag_id,
+            "arch": session_data.get("arch", "aipartner"),
+            "file_path": session_data.get("file_path", ""),
                     "created_at": "",
                     "active": True,
-                })
+        })
     
     return {"rags": rags}
 

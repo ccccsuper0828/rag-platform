@@ -78,7 +78,7 @@ class UserManager:
         # 检查用户名是否已存在
         existing = UserDB.get_by_username(user_data.username)
         if existing:
-            raise ValueError("用户名已存在")
+                raise ValueError("用户名已存在")
         
         # 创建新用户
         user_id = self._generate_user_id()
@@ -108,7 +108,7 @@ class UserManager:
         user_data = UserDB.get_by_username(username)
         
         if user_data:
-            if self._verify_password(password, user_data.get("password_hash", "")):
+                if self._verify_password(password, user_data.get("password_hash", "")):
                 return User(
                     id=user_data["id"],
                     username=user_data["username"],

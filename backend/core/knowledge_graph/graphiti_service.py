@@ -320,24 +320,46 @@ class LocalKnowledgeGraph:
             _local_kg_cache[self.cache_key] = self
     
     async def extract_entities_from_text(self, text: str, llm_client=None) -> List[Dict]:
-        """使用 LLM 从文本中提取实体"""
-        # 这里可以调用 AI Partner Runner 的实体提取接口
+        """使用 spaCy 和正则表达式从文本中提取实体"""
         import re
         
         entities = []
         
-        # 简单的模式匹配提取
+        # 尝试使用 spaCy 进行实体提取
+        try:
+            import spacy
+            try:
+                nlp = spacy.load("en_core_web_sm")
+            except OSError:
+                # 如果模型未下载，使用 blank 模型
+                nlp = spacy.blank("en")
+            
+            doc = nlp(text[:50000])  # 限制长度
+            for ent in doc.ents:
+                if ent.text not in [e["name"] for e in entities]:
+                    entities.append({
+                        "name": ent.text,
+                        "type": ent.label_,
+                        "start": ent.start_char,
+                        "end": ent.end_char,
+                    })
+        except Exception as e:
+            logger.warning(f"spaCy extraction failed: {e}, using regex fallback")
+        
+        # 正则表达式补充提取（特别是保险相关术语）
         patterns = {
             "Person": r'\b[A-Z][a-z]+ [A-Z][a-z]+\b',
-            "Organization": r'\b[A-Z][A-Z]+\b',
+            "Organization": r'\b(?:AIA|友邦|平安|中国人寿|太平洋|新华|泰康|人保|安联|保诚|[A-Z]{2,})\b',
+            "Insurance": r'\b(?:人寿保险|重疾险|医疗险|意外险|寿险|年金险|投连险|万能险|终身寿险|定期寿险|分红险)\b',
+            "Coverage": r'\b(?:保额|保费|保障期限|缴费期|等待期|免责条款|理赔|现金价值|保单贷款)\b',
             "Technology": r'\b(?:Python|JavaScript|TypeScript|React|Vue|FastAPI|Django|Docker|Kubernetes|RAG|LLM|GPT|Claude|API)\b',
-            "Location": r'\b(?:California|San Francisco|New York|China|USA)\b',
+            "Amount": r'\b(?:\d+(?:,\d{3})*(?:\.\d{2})?)\s*(?:元|万|亿|USD|HKD|RMB)\b',
         }
         
         for entity_type, pattern in patterns.items():
             for match in re.finditer(pattern, text):
                 name = match.group()
-                if name not in [e["name"] for e in entities]:
+                if name not in [e["name"] for e in entities] and len(name) > 1:
                     entities.append({
                         "name": name,
                         "type": entity_type,

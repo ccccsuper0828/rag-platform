@@ -35,9 +35,13 @@ sentence-transformers>=3.0.0
 
 # Research Mode dependencies
 asyncio-throttle>=1.0.0
+anthropic>=0.18.0
 
 # Memory System
 # SQLite is built-in, no extra deps needed
 
 # MCP Protocol
 # httpx already included above
+
+# Knowledge Graph (local mode)
+spacy>=3.7.0

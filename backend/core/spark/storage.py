@@ -90,7 +90,7 @@ class SparkStorage:
         with get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute("""
-                SELECT * FROM spark_conversations WHERE rag_id = ?
+                SELECT * FROM spark_conversations WHERE rag_id = %s
                 ORDER BY spark_value DESC
             """, (rag_id,))
             results = []
@@ -116,9 +116,9 @@ class SparkStorage:
             cursor = conn.cursor()
             cursor.execute(f"""
                 SELECT * FROM spark_conversations 
-                WHERE spark_value >= ?
+                WHERE spark_value >= %s
                 ORDER BY {order_by}
-                LIMIT ? OFFSET ?
+                LIMIT %s OFFSET %s
             """, (min_spark, limit, offset))
             results = []
             for row in cursor.fetchall():
@@ -138,12 +138,12 @@ class SparkStorage:
         """更新对话光源记录"""
         with get_connection() as conn:
             cursor = conn.cursor()
-            set_clauses = ", ".join([f"{k} = ?" for k in updates.keys()])
+            set_clauses = ", ".join([f"{k} = %s" for k in updates.keys()])
             values = list(updates.values()) + [datetime.now().isoformat(), user_id, conversation_id]
             cursor.execute(f"""
                 UPDATE spark_conversations 
-                SET {set_clauses}, updated_at = ?
-                WHERE user_id = ? AND conversation_id = ?
+                SET {set_clauses}, updated_at = %s
+                WHERE user_id = %s AND conversation_id = %s
             """, values)
             return cursor.rowcount > 0
     
@@ -188,11 +188,18 @@ class SparkStorage:
         with get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute("""
-                INSERT OR REPLACE INTO spark_knowledge_nodes 
+                INSERT INTO spark_knowledge_nodes 
                 (id, node_id, rag_id, content_preview, source_file, 
                  total_citations, high_spark_citations, contributed_spark, node_value,
                  created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                ON DUPLICATE KEY UPDATE
+                    content_preview = VALUES(content_preview),
+                    total_citations = VALUES(total_citations),
+                    high_spark_citations = VALUES(high_spark_citations),
+                    contributed_spark = VALUES(contributed_spark),
+                    node_value = VALUES(node_value),
+                    updated_at = VALUES(updated_at)
             """, (
                 node.id, node.node_id, node.rag_id, node.content_preview, node.source_file,
                 node.total_citations, node.high_spark_citations, node.contributed_spark, node.node_value,
@@ -210,7 +217,7 @@ class SparkStorage:
             cursor = conn.cursor()
             cursor.execute("""
                 SELECT * FROM spark_knowledge_nodes 
-                WHERE rag_id = ? AND node_id = ?
+                WHERE rag_id = %s AND node_id = %s
             """, (rag_id, node_id))
             row = cursor.fetchone()
             if row:
@@ -223,7 +230,7 @@ class SparkStorage:
             cursor = conn.cursor()
             cursor.execute("""
                 SELECT * FROM spark_knowledge_nodes 
-                WHERE rag_id = ?
+                WHERE rag_id = %s
                 ORDER BY node_value DESC
             """, (rag_id,))
             return [KnowledgeNodeSpark(**dict(row)) for row in cursor.fetchall()]
@@ -243,7 +250,7 @@ class SparkStorage:
             # 检查节点是否存在
             cursor.execute("""
                 SELECT * FROM spark_knowledge_nodes 
-                WHERE rag_id = ? AND node_id = ?
+                WHERE rag_id = %s AND node_id = %s
             """, (rag_id, node_id))
             row = cursor.fetchone()
             
@@ -256,7 +263,7 @@ class SparkStorage:
                     (id, node_id, rag_id, content_preview, source_file,
                      total_citations, high_spark_citations, contributed_spark, node_value,
                      created_at, updated_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """, (
                     node_id, node_id, rag_id, content_preview, source_file,
                     1, 1 if spark_value >= 70 else 0, spark_value, 0,
@@ -276,9 +283,9 @@ class SparkStorage:
                 
                 cursor.execute("""
                     UPDATE spark_knowledge_nodes 
-                    SET total_citations = ?, high_spark_citations = ?, 
-                        contributed_spark = ?, node_value = ?, updated_at = ?
-                    WHERE rag_id = ? AND node_id = ?
+                    SET total_citations = %s, high_spark_citations = %s, 
+                        contributed_spark = %s, node_value = %s, updated_at = %s
+                    WHERE rag_id = %s AND node_id = %s
                 """, (total, high_spark, contributed, node_value, now, rag_id, node_id))
     
     # ==================== 用户光源档案 ====================
@@ -287,7 +294,7 @@ class SparkStorage:
         """获取用户光源档案"""
         with get_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT * FROM spark_profiles WHERE user_id = ?", (user_id,))
+            cursor.execute("SELECT * FROM spark_profiles WHERE user_id = %s", (user_id,))
             row = cursor.fetchone()
             
             if row:
@@ -325,11 +332,23 @@ class SparkStorage:
         with get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute("""
-                INSERT OR REPLACE INTO spark_profiles 
+                INSERT INTO spark_profiles 
                 (user_id, total_spark, average_spark, total_conversations, high_spark_conversations,
                  reputation_level, reputation_score, nft_count, nft_total_value, 
                  rewards_earned, rewards_pending, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                ON DUPLICATE KEY UPDATE
+                    total_spark = VALUES(total_spark),
+                    average_spark = VALUES(average_spark),
+                    total_conversations = VALUES(total_conversations),
+                    high_spark_conversations = VALUES(high_spark_conversations),
+                    reputation_level = VALUES(reputation_level),
+                    reputation_score = VALUES(reputation_score),
+                    nft_count = VALUES(nft_count),
+                    nft_total_value = VALUES(nft_total_value),
+                    rewards_earned = VALUES(rewards_earned),
+                    rewards_pending = VALUES(rewards_pending),
+                    updated_at = VALUES(updated_at)
             """, (
                 user_id, profile.total_spark, profile.average_spark,
                 profile.total_conversations, profile.high_spark_conversations,

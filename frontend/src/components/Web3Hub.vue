@@ -14,11 +14,11 @@
       </button>
     </div>
 
-    <!-- NFT 资产面板 -->
+    <!-- 推荐保险面板 -->
     <div v-if="activeTab === 'nft'" class="tab-content nft-panel">
       <div class="panel-header">
-        <h2>🎨 NFT 知识资产</h2>
-        <p class="panel-desc">将您的 RAG 答案铸造为链上 NFT，永久保存知识成果</p>
+        <h2>🏆 推荐保险记录</h2>
+        <p class="panel-desc">您的保险推荐记录将永久保存到区块链，成为可信赖的推荐凭证</p>
       </div>
 
       <!-- 钱包连接 -->
@@ -36,11 +36,11 @@
         </div>
       </div>
 
-      <!-- NFT 统计 -->
+      <!-- 推荐统计 -->
       <div class="nft-stats">
         <div class="stat-card">
           <span class="stat-value">{{ nftStats.minted }}</span>
-          <span class="stat-label">已铸造</span>
+          <span class="stat-label">已推荐</span>
         </div>
         <div class="stat-card">
           <span class="stat-value">{{ nftStats.totalValue }}</span>
@@ -48,7 +48,7 @@
         </div>
         <div class="stat-card">
           <span class="stat-value">{{ nftStats.earnings }}</span>
-          <span class="stat-label">版税收益</span>
+          <span class="stat-label">推荐收益</span>
         </div>
       </div>
 
@@ -72,18 +72,18 @@
         </div>
         
         <div v-if="nftList.length === 0" class="empty-state">
-          <span class="empty-icon">🎭</span>
-          <p>您还没有铸造任何 NFT</p>
-          <p class="empty-hint">在 AI 问答中获得满意答案后，可以将其铸造为 NFT</p>
+          <span class="empty-icon">🏆</span>
+          <p>您还没有推荐任何保险</p>
+          <p class="empty-hint">在保险合同解析中获得满意答案后，可以铸造为推荐保险记录</p>
         </div>
       </div>
     </div>
 
-    <!-- DAO 治理面板 -->
+    <!-- 保险治理面板 -->
     <div v-if="activeTab === 'dao'" class="tab-content dao-panel">
       <div class="panel-header">
-        <h2>🏛️ DAO 治理</h2>
-        <p class="panel-desc">参与平台治理，投票决定发展方向</p>
+        <h2>🏛️ 保险治理</h2>
+        <p class="panel-desc">参与保险产品推荐治理，投票决定优质保险推荐标准</p>
       </div>
 
       <!-- 治理统计 -->
@@ -136,11 +136,11 @@
       </div>
     </div>
 
-    <!-- 任务池面板 -->
+    <!-- 保险任务面板 -->
     <div v-if="activeTab === 'tasks'" class="tab-content tasks-panel">
       <div class="panel-header">
-        <h2>📋 任务池</h2>
-        <p class="panel-desc">发布任务、领取任务、赚取奖励</p>
+        <h2>📋 保险任务</h2>
+        <p class="panel-desc">发布保险咨询任务、领取任务、赚取推荐奖励</p>
       </div>
 
       <!-- 任务统计 -->
@@ -245,9 +245,9 @@ const taskFilter = ref('all')
 
 // Tab 配置
 const tabs = [
-  { id: 'nft', icon: '🎨', label: 'NFT 资产' },
-  { id: 'dao', icon: '🏛️', label: 'DAO 治理' },
-  { id: 'tasks', icon: '📋', label: '任务池' }
+  { id: 'nft', icon: '🏆', label: '推荐保险' },
+  { id: 'dao', icon: '🏛️', label: '保险治理' },
+  { id: 'tasks', icon: '📋', label: '保险任务' }
 ]
 
 // 任务筛选器
@@ -288,9 +288,9 @@ async function loadMintedNFTs() {
       const parsed = JSON.parse(stored)
       nftList.value = parsed.map((nft, index) => ({
         tokenId: nft.tokenId || index + 1,
-        title: `知识 NFT #${nft.tokenId || index + 1}`,
-        question: nft.question || '铸造的知识内容',
-        icon: '📚',
+        title: `推荐保险 #${nft.tokenId || index + 1}`,
+        question: nft.question || '推荐的保险产品',
+        icon: '🏆',
         mintedAt: nft.timestamp,
         txHash: nft.txHash,
         ipfsCID: nft.ipfsCID
@@ -310,9 +310,9 @@ async function loadMintedNFTs() {
         if (data.nfts && data.nfts.length > 0) {
           nftList.value = data.nfts.map(nft => ({
             tokenId: nft.token_id,
-            title: `知识 NFT #${nft.token_id}`,
+            title: `推荐保险 #${nft.token_id}`,
             question: nft.question,
-            icon: '📚',
+            icon: '🏆',
             mintedAt: nft.created_at,
             txHash: nft.tx_hash,
             ipfsCID: nft.ipfs_cid
@@ -329,16 +329,16 @@ async function loadMintedNFTs() {
 const proposals = ref([
   {
     id: 1,
-    title: '增加知识 NFT 版税分成比例',
-    description: '提议将创作者版税从 5% 提高到 7.5%，激励更多高质量内容创作',
+    title: '增加保险推荐佣金分成比例',
+    description: '提议将推荐人佣金从 5% 提高到 7.5%，激励更多高质量保险推荐',
     status: 'active',
     votesFor: 1254,
     votesAgainst: 342
   },
   {
     id: 2,
-    title: '引入知识质量评估机制',
-    description: '建立去中心化的知识质量评估系统，由社区投票决定内容质量分数',
+    title: '引入保险推荐质量评估机制',
+    description: '建立去中心化的保险推荐质量评估系统，由社区投票决定推荐质量分数',
     status: 'active',
     votesFor: 892,
     votesAgainst: 156
@@ -348,40 +348,40 @@ const proposals = ref([
 const tasks = ref([
   {
     id: 1,
-    title: '翻译技术文档',
-    description: '将 RAG 技术白皮书翻译成中文，需要专业的技术背景',
-    category: '翻译',
-    skills: ['中文', '英文', '技术写作'],
+    title: '解读AIA人寿保险条款',
+    description: '需要保险专业人士解读AIA人寿保险条款的细节，包括保障范围和理赔条件',
+    category: '条款解读',
+    skills: ['保险', '条款分析', '理赔经验'],
     reward: 0.5,
     deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     status: 'OPEN'
   },
   {
     id: 2,
-    title: '智能合约安全审计',
-    description: '审计 RAG NFT 智能合约，提交漏洞报告',
-    category: '安全',
-    skills: ['Solidity', '安全审计', 'Web3'],
+    title: '重疾险对比分析',
+    description: '对比分析市场上主流重疾险产品，提供专业推荐建议',
+    category: '产品对比',
+    skills: ['重疾险', '产品分析', '保险顾问'],
     reward: 1.2,
     deadline: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
     status: 'OPEN'
   },
   {
     id: 3,
-    title: '设计 NFT 展示页面',
-    description: '为知识 NFT 设计精美的展示页面 UI',
-    category: '设计',
-    skills: ['UI/UX', 'Figma', 'Web Design'],
+    title: '家庭保险配置方案',
+    description: '为三口之家设计全面的保险配置方案',
+    category: '方案设计',
+    skills: ['保险规划', '家庭保障', '理财规划'],
     reward: 0.3,
     deadline: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
     status: 'OPEN'
   },
   {
     id: 4,
-    title: '编写使用教程',
-    description: '编写平台使用教程和最佳实践指南',
-    category: '文档',
-    skills: ['技术写作', 'Markdown'],
+    title: '医疗险理赔指南',
+    description: '编写医疗险理赔流程指南和常见问题解答',
+    category: '理赔指南',
+    skills: ['理赔经验', '医疗险'],
     reward: 0.2,
     deadline: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000),
     status: 'OPEN'

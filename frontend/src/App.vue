@@ -20,7 +20,7 @@
           @click="currentView = 'ragHall'; loadRagHall()"
         >
           <span class="nav-icon">🏛️</span>
-          <span v-if="!sidebarCollapsed" class="nav-label">RAG 大厅</span>
+          <span v-if="!sidebarCollapsed" class="nav-label">保险资料大厅</span>
         </button>
         <button 
           class="nav-item" 
@@ -41,7 +41,7 @@
           :title="!isLoggedIn ? '请先登录' : (!hasRags ? '请先上传文件' : '')"
         >
           <span class="nav-icon">🤖</span>
-          <span v-if="!sidebarCollapsed" class="nav-label">AI 问答</span>
+          <span v-if="!sidebarCollapsed" class="nav-label">保险合同解析</span>
           <span v-if="!isLoggedIn && !sidebarCollapsed" class="nav-lock">🔒</span>
         </button>
         <button 
@@ -52,7 +52,7 @@
           :title="!isLoggedIn ? '请先登录' : (!hasRags ? '请先上传文件' : '')"
         >
           <span class="nav-icon">📖</span>
-          <span v-if="!sidebarCollapsed" class="nav-label">文档研读</span>
+          <span v-if="!sidebarCollapsed" class="nav-label">保险合同研读</span>
           <span v-if="!isLoggedIn && !sidebarCollapsed" class="nav-lock">🔒</span>
         </button>
         <button 
@@ -63,7 +63,7 @@
           :title="!isLoggedIn ? '请先登录' : (!hasRags ? '请先上传文件' : '')"
         >
           <span class="nav-icon">🔬</span>
-          <span v-if="!sidebarCollapsed" class="nav-label">深度研究</span>
+          <span v-if="!sidebarCollapsed" class="nav-label">保险合同深度思考</span>
           <span v-if="!isLoggedIn && !sidebarCollapsed" class="nav-lock">🔒</span>
         </button>
         <button 
@@ -104,14 +104,14 @@
           :title="!isLoggedIn ? '请先登录' : ''"
         >
           <span class="nav-icon">🔗</span>
-          <span v-if="!sidebarCollapsed" class="nav-label">Web3 中心</span>
+          <span v-if="!sidebarCollapsed" class="nav-label">优质保险中心</span>
           <span v-if="!isLoggedIn && !sidebarCollapsed" class="nav-lock">🔒</span>
         </button>
         
         <!-- RAG 列表 -->
         <div v-if="!sidebarCollapsed && ragList.length > 0" class="rag-list-section">
           <div class="rag-list-header">
-            <span>📚 我的知识库</span>
+            <span>📚 我的保险资料</span>
                   </div>
           <div 
             v-for="rag in ragList" 
@@ -152,16 +152,16 @@
       <header class="main-header">
         <div class="header-left">
           <h1 class="page-title">
-            {{ currentView === 'ragHall' ? 'RAG 知识库大厅' : 
+            {{ currentView === 'ragHall' ? '保险资料大厅' : 
                currentView === 'discussionHall' ? '讨论大厅' :
                currentView === 'discussion' ? '实时讨论' :
-               currentView === 'chat' ? 'AI 智能问答' : 
-               currentView === 'pdfChat' ? '文档研读模式' :
-               currentView === 'research' ? '深度研究模式' : 
+               currentView === 'chat' ? '保险合同解析' : 
+               currentView === 'pdfChat' ? '保险合同研读' :
+               currentView === 'research' ? '保险合同深度思考' : 
                currentView === 'memory' ? '记忆库' : 
                currentView === 'dashboard' ? '个人仪表盘' :
                currentView === 'spark' ? '光源中心' :
-               currentView === 'web3' ? 'Web3 中心' : '创建知识库' }}
+               currentView === 'web3' ? '优质保险中心' : '创建知识库' }}
           </h1>
         </div>
         <div class="header-right">
@@ -308,8 +308,8 @@
             <div class="chat-messages" ref="chatContainer">
               <div v-if="chatHistory.length === 0" class="chat-empty">
                 <div class="empty-icon">💭</div>
-                <h3>开始对话</h3>
-                <p>向您的 AI 助手提问任何关于文档的问题</p>
+                <h3>开始解析保险合同</h3>
+                <p>向 AI 助手咨询任何关于保险合同的问题</p>
                 
                 <!-- Suggestion Cards -->
                 <div class="suggestion-grid">
@@ -346,9 +346,9 @@
                     <button 
                       class="mint-nft-btn"
                       @click="openMintModal(msg, index)"
-                      title="将此答案铸造为 NFT"
+                      title="将此推荐铸造为保险推荐记录"
                     >
-                      🎨 铸造 NFT
+                      🏆 铸造推荐保险
                     </button>
                   </div>
                 </div>
@@ -547,7 +547,7 @@
             <textarea 
               v-model="researchQuery"
               class="research-input"
-              placeholder="详细描述您要深入研究的问题... 例如：分析项目的核心架构设计理念和技术选型的优缺点"
+              placeholder="详细描述您要深入思考的保险问题... 例如：分析不同人寿保险产品的保障范围和性价比，对比AIA和友邦的重疾险条款"
               rows="4"
             ></textarea>
           </div>
@@ -645,8 +645,8 @@
             @click="startQNNResearch"
             :disabled="!researchQuery.trim() || isResearching || qnnConfig.selectedMbtis.length < 2"
           >
-            <span v-if="!isResearching">🚀 启动 QNN 深度研究</span>
-            <span v-else>🧠 研究进行中...</span>
+            <span v-if="!isResearching">🚀 启动保险深度思考</span>
+            <span v-else>🧠 深度思考进行中...</span>
           </button>
 
           <!-- 研究进度 -->
@@ -769,16 +769,16 @@
         </div>
       </div>
 
-      <!-- RAG 大厅 View -->
+      <!-- 保险资料大厅 View -->
       <div v-if="currentView === 'ragHall'" class="view-container hall-view">
         <div class="hall-container">
           <div class="hall-header">
             <div class="hall-title">
-              <h2>🏛️ RAG 知识库大厅</h2>
-              <p>探索公开的知识库，与其他用户一起讨论</p>
+              <h2>🏛️ 保险资料大厅</h2>
+              <p>探索公开的保险资料，与其他用户一起讨论保险产品</p>
             </div>
             <button class="create-rag-btn" @click="showUploadPanel = true; currentView = 'chat'">
-              ➕ 创建知识库
+              ➕ 上传保险资料
             </button>
           </div>
 
@@ -807,7 +807,7 @@
               </p>
               <div class="rag-card-actions">
                 <button class="action-btn primary" @click.stop="enterRagChat(rag)">
-                  🤖 进入问答
+                  🤖 进入解析
                 </button>
                 <button class="action-btn secondary" @click.stop="joinRagDiscussion(rag.rag_id)">
                   💬 加入讨论
@@ -817,8 +817,8 @@
 
             <div v-if="ragHallList.length === 0" class="hall-empty">
               <div class="empty-icon">🏛️</div>
-              <h3>暂无公开的知识库</h3>
-              <p>创建第一个知识库来开始吧！</p>
+              <h3>暂无公开的保险资料</h3>
+              <p>上传第一份保险资料来开始吧！</p>
             </div>
           </div>
         </div>
@@ -872,9 +872,9 @@
             <div v-if="discussionRooms.length === 0" class="hall-empty">
               <div class="empty-icon">💬</div>
               <h3>暂无活跃的讨论</h3>
-              <p>前往 RAG 大厅，开启新的讨论！</p>
+              <p>前往保险资料大厅，开启新的讨论！</p>
               <button class="goto-hall-btn" @click="currentView = 'ragHall'; loadRagHall()">
-                前往 RAG 大厅
+                前往保险资料大厅
               </button>
             </div>
           </div>
@@ -1158,8 +1158,8 @@
         <button class="mint-close-btn" @click="showMintModal = false">✕</button>
         
         <div class="mint-header">
-          <h2>🎨 铸造知识 NFT</h2>
-          <p>将 AI 答案永久保存到区块链</p>
+          <h2>🏆 铸造推荐保险</h2>
+          <p>将您的保险推荐记录永久保存到区块链</p>
         </div>
         
         <div class="mint-content">
@@ -1194,7 +1194,7 @@
               @click="mintNFT"
               :disabled="!walletConnected || isMinting"
             >
-              <span v-if="!isMinting">🚀 铸造 NFT (0.001 ETH)</span>
+              <span v-if="!isMinting">🚀 铸造推荐保险 (0.001 ETH)</span>
               <span v-else>⏳ 铸造中...</span>
             </button>
             <button class="mint-btn-secondary" @click="showMintModal = false">
@@ -1203,7 +1203,7 @@
           </div>
           
           <div class="mint-notice">
-            <p>⚠️ 铸造需要支付少量 Gas 费用和 0.001 ETH 铸造费</p>
+            <p>⚠️ 铸造推荐保险需要支付少量 Gas 费用和 0.001 ETH 铸造费</p>
           </div>
         </div>
       </div>
