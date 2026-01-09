@@ -163,6 +163,9 @@ async def load_documents_for_rag(rag_id: str, user_workspace: Path) -> List[Dict
     backend_dir = current_file.parent.parent  # core -> backend
     project_dir = backend_dir.parent  # backend -> rag-platform-mvp
     
+    print(f"[load_documents_for_rag] rag_id={rag_id}, user_workspace={user_workspace}")
+    print(f"[load_documents_for_rag] backend_dir={backend_dir}, project_dir={project_dir}")
+    
     # 从 rag_id 中提取 user_id（格式: rag_{user_id}_{hash}）
     parts = rag_id.split('_')
     if len(parts) >= 2:
@@ -170,12 +173,21 @@ async def load_documents_for_rag(rag_id: str, user_workspace: Path) -> List[Dict
     else:
         user_id = "unknown"
     
+    print(f"[load_documents_for_rag] extracted user_id={user_id}")
+    
     # 尝试多个可能的路径
     possible_rag_dirs = [
         project_dir / "ai_partner_workspaces" / f"user_{user_id}" / rag_id,
         user_workspace / rag_id,
         user_workspace,
+        Path("/app/ai_partner_workspaces") / f"user_{user_id}" / rag_id,  # Docker 路径
     ]
+    
+    print(f"[load_documents_for_rag] Checking paths:")
+    for d in possible_rag_dirs:
+        exists = d.exists()
+        has_notes = (d / "notes").exists() if exists else False
+        print(f"  - {d}: exists={exists}, has_notes={has_notes}")
     
     rag_dir = None
     for d in possible_rag_dirs:
@@ -259,6 +271,7 @@ async def run_qnn_research(
     流式返回研究进度和结果
     """
     user_workspace = get_user_workspace(user)
+    print(f"[qnn-research] START rag_id={rag_id}, user_id={user.get('user_id')}, query={request.query[:50]}...")
     
     # 验证参数
     if request.qnn_depth < 1 or request.qnn_depth > 4:

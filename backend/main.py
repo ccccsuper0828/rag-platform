@@ -142,12 +142,15 @@ def compute_file_content_hash(file_content: bytes) -> str:
 def get_user_rag_metadata(user_id: str) -> list:
     """获取用户的所有 RAG 元数据"""
     rags = RagDB.get_by_user(user_id)
-    return [{
+    print(f"[get_user_rag_metadata] user_id={user_id}, raw_rags={rags}")
+    result = [{
         "rag_id": r.get("id"),
         "file_path": r.get("file_path"),
         "arch": "aipartner",  # 默认架构
         "created_at": r.get("created_at"),
     } for r in rags]
+    print(f"[get_user_rag_metadata] result count={len(result)}")
+    return result
 
 
 def load_rag_metadata() -> dict:
@@ -442,15 +445,18 @@ async def chat_stream(
     返回 text/plain 流式响应，前端可实时显示
     """
     user_id = current_user["user_id"]
+    print(f"[chat_stream] user_id={user_id}, rag_id={request.rag_id}, question={request.question[:50]}...")
     
     # 检查用户是否有该 RAG
     if user_id not in rag_engine_cache:
+        print(f"[chat_stream] ERROR: user_id={user_id} not in cache. Cache keys: {list(rag_engine_cache.keys())}")
         raise HTTPException(
             status_code=404,
             detail="用户没有可用的 RAG。请先上传文件创建 RAG。",
         )
     
     if request.rag_id not in rag_engine_cache[user_id]:
+        print(f"[chat_stream] ERROR: rag_id={request.rag_id} not in user cache. User's rags: {list(rag_engine_cache[user_id].keys())}")
         raise HTTPException(
             status_code=404,
             detail="RAG 不存在或不属于当前用户。请检查 rag_id 是否正确。",
@@ -708,8 +714,11 @@ async def activate_rag(
     user_id = current_user["user_id"]
     rag_id = request.rag_id
     
+    print(f"[activate_rag] user_id={user_id}, rag_id={rag_id}")
+    
     # 检查是否已在内存中
     if user_id in rag_engine_cache and rag_id in rag_engine_cache[user_id]:
+        print(f"[activate_rag] RAG already in cache")
         return {
             "status": "already_active",
             "rag_id": rag_id,
@@ -718,6 +727,8 @@ async def activate_rag(
     
     # 从持久化存储获取元数据
     user_rags = get_user_rag_metadata(user_id)
+    print(f"[activate_rag] user_rags count={len(user_rags)}, rags={[r.get('rag_id') for r in user_rags]}")
+    
     rag_metadata = None
     for rag in user_rags:
         if rag.get("rag_id") == rag_id:
@@ -725,9 +736,10 @@ async def activate_rag(
             break
     
     if not rag_metadata:
+        print(f"[activate_rag] RAG not found! Looking for rag_id={rag_id} in user's rags")
         raise HTTPException(
             status_code=404,
-            detail="RAG 不存在或不属于当前用户。",
+            detail=f"RAG 不存在或不属于当前用户。user_id={user_id}, rag_id={rag_id}",
         )
     
     file_path = rag_metadata.get("file_path", "")

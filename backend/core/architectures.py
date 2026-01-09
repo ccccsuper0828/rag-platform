@@ -16,15 +16,20 @@ async def build_session(
     - Send extracted_text to host-side AI Partner Runner (Claude Code)
     - Support multi-tenant isolation via user_id
     """
+    print(f"[build_session] START arch={arch}, rag_id={rag_id}, file_path={file_path}, user_id={user_id}")
+    
     arch = (arch or "aipartner").lower()
     if arch not in ("aipartner", "ai-partner", "ai_partner"):
         raise ValueError("Only arch=aipartner is supported.")
 
     runner_url = os.getenv("AI_PARTNER_RUNNER_URL", "http://localhost:9001").rstrip("/")
+    print(f"[build_session] runner_url={runner_url}")
 
     with metrics.time_block("aipartner_parse"):
         parser = RagBuilder(init_models=False)
         _, extracted_text = parser.extract_documents(file_path, metrics=None)
+    
+    print(f"[build_session] extracted_text length={len(extracted_text)}")
 
     # 传递 user_id 给 runner 以实现租户隔离
     payload = {
@@ -34,9 +39,12 @@ async def build_session(
         "user_id": user_id  # 添加用户ID用于workspace隔离
     }
     with metrics.time_block("aipartner_runner_build"):
+        print(f"[build_session] Calling runner: POST {runner_url}/v1/aipartner/build")
         async with httpx.AsyncClient(timeout=1800.0) as client:
             resp = await client.post(f"{runner_url}/v1/aipartner/build", json=payload)
+            print(f"[build_session] Runner response: status={resp.status_code}")
             if resp.status_code >= 400:
+                print(f"[build_session] ERROR: {resp.text}")
                 raise ValueError(f"AI Partner runner build failed: {resp.status_code} {resp.text}")
 
     session = {
