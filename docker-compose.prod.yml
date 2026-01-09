@@ -27,8 +27,9 @@ services:
       dockerfile: Dockerfile.prod
     container_name: rag-runner
     restart: always
+    env_file:
+      - ./ai_partner_runner/.env
     environment:
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - CLAUDE_BIN=/usr/bin/claude
       - AI_PARTNER_WORKSPACES_DIR=/app/workspaces
       - AI_PARTNER_SKILL_SRC=/app/skill
