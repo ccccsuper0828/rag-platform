@@ -428,8 +428,10 @@ class LocalKnowledgeGraph:
 
 def get_knowledge_graph_service(user_id: str, rag_id: str):
     """获取知识图谱服务实例"""
-    if KG_ENABLED:
-        return GraphitiService(user_id, rag_id)
-    else:
-        return LocalKnowledgeGraph(user_id, rag_id)
+    # 暂时禁用 Graphiti/FalkorDB，因为 RediSearch 查询有语法问题
+    # 使用 LocalKnowledgeGraph 作为替代方案
+    # TODO: 修复 graphiti-core 的 RediSearch 查询语法后可以重新启用
+    # if KG_ENABLED:
+    #     return GraphitiService(user_id, rag_id)
+    return LocalKnowledgeGraph(user_id, rag_id)
 

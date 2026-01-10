@@ -123,7 +123,7 @@ def get_rag_document_content(workspace_path: Path, rag_id: str) -> tuple[str, Op
     # 首先尝试从数据库获取 RAG 的文件路径
     try:
         from core.database import RagDB
-        rag_info = RagDB.get_rag_by_id(rag_id)
+        rag_info = RagDB.get_by_id(rag_id)
         if rag_info and rag_info.get("file_path"):
             file_path = Path(rag_info["file_path"])
             # 如果是相对路径，相对于 backend 目录解析

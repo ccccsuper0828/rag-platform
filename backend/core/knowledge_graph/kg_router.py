@@ -207,10 +207,15 @@ async def build_knowledge_graph(
         backend_dir = current_file.parent.parent.parent  # core/knowledge_graph -> core -> backend
         project_dir = backend_dir.parent  # backend -> rag-platform-mvp
         
-        # 尝试多个可能的路径
+        # 尝试多个可能的路径（包括 Docker 路径）
         possible_paths = [
+            # Docker 绝对路径
+            Path("/app/ai_partner_workspaces") / f"user_{user_id}" / rag_id,
+            # 项目相对路径
             project_dir / "ai_partner_workspaces" / f"user_{user_id}" / rag_id,
             backend_dir / "user_data" / user_id / "workspaces" / rag_id,
+            # Docker user_data 路径
+            Path("/app/user_data") / user_id / "workspaces" / rag_id,
         ]
         
         rag_dir = None
