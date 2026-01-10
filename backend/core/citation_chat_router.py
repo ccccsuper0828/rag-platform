@@ -65,18 +65,35 @@ SERPER_API_KEY = os.getenv("SERPER_API_KEY", "")
 def find_rag_workspace(workspace_path: Path, rag_id: str) -> Optional[Path]:
     """
     Find the RAG workspace directory by rag_id.
+    Searches multiple possible locations for Docker and local deployments.
     """
-    if not workspace_path.exists():
-        return None
+    # 从 rag_id 提取 user_id（格式: rag_{user_id}_{hash}）
+    parts = rag_id.split('_')
+    user_id = parts[1] if len(parts) >= 2 else "unknown"
     
-    for subdir in workspace_path.iterdir():
-        if subdir.is_dir():
-            if subdir.name == rag_id:
-                return subdir
-            if subdir.name == f"rag_{rag_id}":
-                return subdir
-            if rag_id in subdir.name and subdir.name.startswith("rag_"):
-                return subdir
+    # 尝试多个可能的路径
+    possible_paths = [
+        # Docker ai_partner_workspaces 路径
+        Path("/app/ai_partner_workspaces") / f"user_{user_id}" / rag_id,
+        # 项目根目录下的 ai_partner_workspaces
+        Path(__file__).parent.parent.parent / "ai_partner_workspaces" / f"user_{user_id}" / rag_id,
+        # 用户 workspace 路径
+        workspace_path / rag_id,
+        workspace_path / f"rag_{rag_id}",
+    ]
+    
+    for path in possible_paths:
+        if path.exists() and path.is_dir():
+            return path
+    
+    # 回退：搜索 workspace_path 目录
+    if workspace_path.exists():
+        for subdir in workspace_path.iterdir():
+            if subdir.is_dir():
+                if subdir.name == rag_id or subdir.name == f"rag_{rag_id}":
+                    return subdir
+                if rag_id in subdir.name and subdir.name.startswith("rag_"):
+                    return subdir
     
     return None
 
@@ -961,15 +978,24 @@ async def get_document_info(
         rag_info = metadata[user_id][rag_id]
         file_path = rag_info.get("file_path", "")
         
-        if file_path and Path(file_path).exists():
-            file_stat = Path(file_path).stat()
-            documents.append({
-                "name": Path(file_path).name,
-                "path": file_path,
-                "size": file_stat.st_size,
-                "type": "upload",
-                "created_at": rag_info.get("created_at", "")
-            })
+        # 尝试多个可能的文件路径
+        possible_file_paths = [
+            Path(file_path),  # 原始路径
+            Path("/app") / file_path,  # Docker 绝对路径
+            Path(__file__).parent.parent.parent / file_path,  # 项目根目录相对路径
+        ]
+        
+        for fp in possible_file_paths:
+            if fp.exists():
+                file_stat = fp.stat()
+                documents.append({
+                    "name": fp.name,
+                    "path": str(fp),
+                    "size": file_stat.st_size,
+                    "type": "upload",
+                    "created_at": rag_info.get("created_at", "")
+                })
+                break  # 找到就停止
     
     # 如果没有从元数据找到，尝试从 workspace 目录获取
     if not documents:

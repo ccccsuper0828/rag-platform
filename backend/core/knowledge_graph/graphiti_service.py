@@ -28,7 +28,11 @@ class GraphitiService:
     def __init__(self, user_id: str, rag_id: str):
         self.user_id = user_id
         self.rag_id = rag_id
-        self.group_id = f"{user_id}_{rag_id}"
+        # 使用连字符代替下划线，避免 RediSearch 分词问题
+        # RediSearch 会把下划线当作分词符号，导致查询语法错误
+        safe_user_id = user_id.replace("_", "-")
+        safe_rag_id = rag_id.replace("_", "-")
+        self.group_id = f"{safe_user_id}-{safe_rag_id}"
         self._graphiti = None
     
     async def _get_graphiti(self):
@@ -307,7 +311,10 @@ class LocalKnowledgeGraph:
     def __init__(self, user_id: str, rag_id: str):
         self.user_id = user_id
         self.rag_id = rag_id
-        self.cache_key = f"{user_id}_{rag_id}"
+        # 使用连字符代替下划线，保持与 GraphitiService 一致
+        safe_user_id = user_id.replace("_", "-")
+        safe_rag_id = rag_id.replace("_", "-")
+        self.cache_key = f"{safe_user_id}-{safe_rag_id}"
         
         # 如果缓存中已有数据，恢复
         if self.cache_key in _local_kg_cache:
