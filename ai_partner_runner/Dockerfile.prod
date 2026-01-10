@@ -27,8 +27,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 # 复制代码
 COPY . .
 
-# 创建工作区目录
+# 创建工作区目录和 skill 目录
 RUN mkdir -p /app/workspaces
+RUN mkdir -p /app/skill
+
+# 复制 skill 模板（确保已存在）
+COPY skill/ /app/skill/
 
 # 设置权限
 RUN chmod +x /app/*.py 2>/dev/null || true
