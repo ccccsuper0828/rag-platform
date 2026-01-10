@@ -179,6 +179,12 @@ def load_rag_metadata() -> dict:
 # 初始化 MCP 工具
 mcp_registry.initialize_default_tools()
 
+@app.get("/health")
+def health_check():
+    """健康检查端点"""
+    return {"status": "healthy", "version": "2.0.0"}
+
+
 @app.get("/")
 def read_root():
     return {
@@ -745,26 +751,68 @@ async def activate_rag(
     file_path = rag_metadata.get("file_path", "")
     arch = rag_metadata.get("arch", "aipartner")
     
-    # 检查文件是否仍然存在
-    if not Path(file_path).exists():
-        raise HTTPException(
-            status_code=404,
-            detail=f"原始文件已被删除: {file_path}",
-        )
+    # 检查 workspace 是否已存在（Docker 环境下优先使用 volume 中的数据）
+    workspace_paths = [
+        Path("/app/ai_partner_workspaces") / f"user_{user_id}" / rag_id,  # Docker 路径
+        Path("ai_partner_workspaces") / f"user_{user_id}" / rag_id,  # 相对路径
+    ]
+    
+    workspace_exists = False
+    for ws in workspace_paths:
+        if ws.exists() and (ws / "notes").exists():
+            print(f"[activate_rag] Found existing workspace at {ws}")
+            workspace_exists = True
+            break
+    
+    # 如果 workspace 已存在，可以直接使用，不需要原始文件
+    if not workspace_exists:
+        # 检查文件是否仍然存在
+        if not Path(file_path).exists():
+            print(f"[activate_rag] File not found: {file_path}")
+            # 尝试在 Docker volume 中查找
+            docker_uploads = Path("/app/user_uploads") / user_id
+            if docker_uploads.exists():
+                pdf_files = list(docker_uploads.glob("*.pdf")) + list(docker_uploads.glob("*.PDF"))
+                if pdf_files:
+                    file_path = str(pdf_files[0])
+                    print(f"[activate_rag] Using Docker upload: {file_path}")
+                else:
+                    raise HTTPException(
+                        status_code=404,
+                        detail=f"原始文件已被删除且 workspace 不存在: {file_path}",
+                    )
+            else:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"原始文件已被删除且 workspace 不存在: {file_path}",
+                )
     
     try:
-        # 重新构建 session
+        # 重新构建 session（如果 workspace 存在，runner 会复用它）
         metrics = JsonlMetricsLogger(rag_id=rag_id, arch=arch)
         
-        print(f"[User {user_id}] Re-activating RAG: {rag_id}")
-        with metrics.time_block("rag_reactivate", {"rag_id": rag_id, "user_id": user_id}):
-            session, extracted_text = await build_session(
-                arch=arch,
-                rag_id=rag_id,
-                file_path=file_path,
-                metrics=metrics,
-                user_id=user_id,
-            )
+        print(f"[User {user_id}] Re-activating RAG: {rag_id}, workspace_exists={workspace_exists}")
+        
+        # 如果 workspace 已存在，创建一个简单的 session 而不需要重新构建
+        if workspace_exists:
+            runner_url = os.getenv("AI_PARTNER_RUNNER_URL", "http://localhost:9001").rstrip("/")
+            session = {
+                "arch": "aipartner", 
+                "type": "aipartner_remote", 
+                "runner_url": runner_url, 
+                "rag_id": rag_id,
+                "user_id": user_id
+            }
+            extracted_text = ""  # 从 notes 读取会在 chat 时完成
+        else:
+            with metrics.time_block("rag_reactivate", {"rag_id": rag_id, "user_id": user_id}):
+                session, extracted_text = await build_session(
+                    arch=arch,
+                    rag_id=rag_id,
+                    file_path=file_path,
+                    metrics=metrics,
+                    user_id=user_id,
+                )
         
         # 保存到缓存
         if user_id not in rag_engine_cache:

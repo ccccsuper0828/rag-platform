@@ -164,7 +164,6 @@ async def load_documents_for_rag(rag_id: str, user_workspace: Path) -> List[Dict
     project_dir = backend_dir.parent  # backend -> rag-platform-mvp
     
     print(f"[load_documents_for_rag] rag_id={rag_id}, user_workspace={user_workspace}")
-    print(f"[load_documents_for_rag] backend_dir={backend_dir}, project_dir={project_dir}")
     
     # 从 rag_id 中提取 user_id（格式: rag_{user_id}_{hash}）
     parts = rag_id.split('_')
@@ -175,29 +174,42 @@ async def load_documents_for_rag(rag_id: str, user_workspace: Path) -> List[Dict
     
     print(f"[load_documents_for_rag] extracted user_id={user_id}")
     
-    # 尝试多个可能的路径
+    # 尝试多个可能的路径（Docker 环境优先）
     possible_rag_dirs = [
+        Path("/app/ai_partner_workspaces") / f"user_{user_id}" / rag_id,  # Docker 路径（优先）
         project_dir / "ai_partner_workspaces" / f"user_{user_id}" / rag_id,
         user_workspace / rag_id,
         user_workspace,
-        Path("/app/ai_partner_workspaces") / f"user_{user_id}" / rag_id,  # Docker 路径
     ]
-    
-    print(f"[load_documents_for_rag] Checking paths:")
-    for d in possible_rag_dirs:
-        exists = d.exists()
-        has_notes = (d / "notes").exists() if exists else False
-        print(f"  - {d}: exists={exists}, has_notes={has_notes}")
     
     rag_dir = None
     for d in possible_rag_dirs:
-        if d.exists() and (d / "notes").exists():
+        exists = d.exists()
+        has_notes = (d / "notes").exists() if exists else False
+        print(f"[load_documents_for_rag] Path {d}: exists={exists}, has_notes={has_notes}")
+        if exists and has_notes:
             rag_dir = d
+            print(f"[load_documents_for_rag] Using: {d}")
             break
     
     if not rag_dir:
-        print(f"[load_documents_for_rag] No valid RAG directory found for {rag_id}")
-        return documents
+        # 尝试列出可用的 workspace 目录
+        ws_root = Path("/app/ai_partner_workspaces")
+        if ws_root.exists():
+            user_dirs = list(ws_root.glob(f"user_{user_id}*"))
+            print(f"[load_documents_for_rag] Available user dirs: {user_dirs}")
+            for user_dir in user_dirs:
+                rag_dirs = list(user_dir.glob(f"{rag_id}*"))
+                print(f"[load_documents_for_rag] RAG dirs in {user_dir}: {rag_dirs}")
+                for rd in rag_dirs:
+                    if (rd / "notes").exists():
+                        rag_dir = rd
+                        print(f"[load_documents_for_rag] Found by glob: {rd}")
+                        break
+        
+        if not rag_dir:
+            print(f"[load_documents_for_rag] No valid RAG directory found for {rag_id}")
+            return documents
     
     print(f"[load_documents_for_rag] Using RAG directory: {rag_dir}")
     
